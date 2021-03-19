@@ -58,13 +58,19 @@ AddEventHandler("esx-qalle-jail:jailPlayer", function(targetSrc, jailTime, jailR
 	local src = source
 	local targetSrc = tonumber(targetSrc)
 
-	JailPlayer(targetSrc, jailTime)
+	if xPlayer["job"]["name"] == "police" or xPlayer["job"]["name"] == "sheriff" then
+		JailPlayer(targetSrc, jailTime)
 
-	GetRPName(targetSrc, function(Firstname, Lastname)
-		TriggerClientEvent('chat:addMessage', -1, { args = { "JUDGE",  Firstname .. " " .. Lastname .. " Is now in jail for the reason: " .. jailReason }, color = { 249, 166, 0 } })
-	end)
+		GetRPName(targetSrc, function(Firstname, Lastname)
+			TriggerClientEvent('chat:addMessage', -1, { args = { "JUDGE",  Firstname .. " " .. Lastname .. " Is now in jail for the reason: " .. jailReason }, color = { 249, 166, 0 } })
+		end)
 
-	TriggerClientEvent("esx:showNotification", src, GetPlayerName(targetSrc) .. " Jailed for " .. jailTime .. " minutes!")
+		TriggerClientEvent("esx:showNotification", src, GetPlayerName(targetSrc) .. " Jailed for " .. jailTime .. " minutes!")
+	else
+		-- Put here your event for banning player
+		-- because he is most likely a hacker and trying to fuc* up the system
+	end
+
 end)
 
 RegisterServerEvent("esx-qalle-jail:unJailPlayer")
@@ -72,19 +78,26 @@ AddEventHandler("esx-qalle-jail:unJailPlayer", function(targetIdentifier)
 	local src = source
 	local xPlayer = ESX.GetPlayerFromIdentifier(targetIdentifier)
 
-	if xPlayer ~= nil then
-		UnJail(xPlayer.source)
-	else
-		MySQL.Async.execute(
-			"UPDATE users SET jail = @newJailTime WHERE identifier = @identifier",
-			{
-				['@identifier'] = targetIdentifier,
-				['@newJailTime'] = 0
-			}
-		)
-	end
+	if xPlayer["job"]["name"] == "police" or xPlayer["job"]["name"] == "sheriff" then
+		
+		if xPlayer ~= nil then
+			UnJail(xPlayer.source)
+		else
+			MySQL.Async.execute(
+				"UPDATE users SET jail = @newJailTime WHERE identifier = @identifier",
+				{
+					['@identifier'] = targetIdentifier,
+					['@newJailTime'] = 0
+				}
+			)
+		end
 
-	TriggerClientEvent("esx:showNotification", src, xPlayer.name .. " Unjailed!")
+		TriggerClientEvent("esx:showNotification", src, xPlayer.name .. " Unjailed!")
+
+	else
+		-- Put here your event for banning player
+		-- because he is most likely a hacker and trying to fuc* up the system
+	end
 end)
 
 RegisterServerEvent("esx-qalle-jail:updateJailTime")
